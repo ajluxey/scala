@@ -60,10 +60,10 @@ class SimpleSignAnalysis(cfg: ProgramCfg)(implicit declData: DeclarationData) ex
           case Minus => minus(left, right)
           case Plus => plus(left, right)
           case Times => times(left, right)
-          case _ => ???
         }
       case _: AInput => valuelattice.top
-      case _ => ???
+      case _ => AUnaryOp[_] => NoPointer.LanguageRestrictionViolation(s"No pointers allowed in eval $exp")
+      case _ => ACallFuncExpr => NoCalls.LanguageRestrictionViolation(s"No calls allowed in eval $exp")
     }
   }
 
@@ -79,16 +79,16 @@ class SimpleSignAnalysis(cfg: ProgramCfg)(implicit declData: DeclarationData) ex
     */
   def localTransfer(n: CfgNode, s: statelattice.Element): statelattice.Element = {
     NoPointers.assertContainsNode(n.data)
-    NoCalls.assertContainsNode(n.data)
-    NoRecords.assertContainsNode(n.data)
+//    NoCalls.assertContainsNode(n.data)
     n match {
       case r: CfgStmtNode =>
         r.data match {
           // var declarations
-          case varr: AVarStmt => ??? //<--- Complete here
+          case varr: AVarStmt => var q = s; varr.declIds.map((x) => { q += (x -> SignLattice.top) }); q
 
           // assignments
-          case AAssignStmt(id: AIdentifier, right, _) => ??? //<--- Complete here
+          case AAssignStmt(id: AIdentifier, right, _) => var q = s; q + (declData(id) -> SignLattice.eval(right, q))
+          case AAssignStmt(_: AUnaryOp[_], _, _)      => NoPointers.LanguageRestrictionViolation(s"${r.data} not allowed")
 
           // all others: like no-ops
           case _ => s
