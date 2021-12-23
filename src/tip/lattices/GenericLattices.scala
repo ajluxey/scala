@@ -142,13 +142,13 @@ class MapLattice[A, +L <: Lattice](val sublattice: L) extends Lattice {
 /**
   * The powerset lattice of a set of elements of type `A` with subset ordering.
   */
-class PowersetLattice[A] extends Lattice {
+class PowersetLattice[A](ch: A => Boolean) extends Lattice {
 
   type Element = Set[A]
 
-  val bottom: Element = ??? //<--- Complete here
+  override def bottom: Element = Set(): Element
 
-  def lub(x: Element, y: Element): Element = ??? //<--- Complete here
+  override def lub(x: Element, y: Element) = x | y
 }
 
 /**
