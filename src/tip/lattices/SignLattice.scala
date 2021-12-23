@@ -92,4 +92,21 @@ object SignLattice extends FlatLattice[SignElement.Value] with LatticeWithOps {
   def eqq(a: Element, b: Element): Element = lookup(absEq, a, b)
 
   def gt(a: Element, b: Element): Element = lookup(absGt, a, b)
+
+  def isMonotone(function: (SignLattice.Element, SignLattice.Element) => SignLattice.Element): Boolean = {
+    for (x <- signValues;
+         y <- signValues) {
+      for (z <- signValues if lub(x._1, z._1) == z._1) {
+        if (!(lub(function(x._1, y._1), function(z._1, y._1)) == function(z._1, y._1))) {
+          return false
+        }
+      }
+      for (z <- signValues if lub(y._1, z._1) == z._1) {
+        if (!(lub(function(x._1, y._1), function(x._1, z._1)) == function(x._1, z._1))) {
+          return false
+        }
+      }
+    }
+    return true
+  }
 }
